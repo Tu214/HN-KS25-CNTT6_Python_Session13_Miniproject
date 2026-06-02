@@ -12,10 +12,9 @@ while True:
     print("5. Thoát chương trình")
     print("="*45)
 
-    # Dùng isdigit() kiểm tra trước khi chuyển sang int
     choice_str = input("Nhập lựa chọn của bạn (1-5): ").strip()
     if not choice_str.isdigit():
-        print("[Lỗi]: Lựa chọn không hợp lệ. Vui lòng nhập số nguyên từ 1-5!")
+        print("[ERR-01]: Lựa chọn không hợp lệ. Vui lòng nhập số nguyên từ 1-5!")
         continue
     
     choice = int(choice_str)
@@ -23,7 +22,7 @@ while True:
     if choice == 1:
         plate = input("Nhập biển số: ").strip()
         if not plate:
-            print("[Lỗi]: Biển số không được để trống!")
+            print("[ERR-02]: Biển số không được để trống!")
             continue
 
         # Kiểm tra trùng biển số
@@ -34,24 +33,34 @@ while True:
                 break
 
         if is_duplicate:
-            print("[Lỗi]: Xe với biển số này đã tồn tại trong bãi!")
+            print("[ERR-03]: Xe với biển số này đã tồn tại trong bãi!")
             continue
 
         # Nhập và kiểm tra loại xe
         while True:
             car_type_str = input("Nhập loại xe (1: Xe máy, 2: Ô tô): ").strip()
+            if not car_type_str:
+                print("[ERR-02]: Loại xe không được để trống!")
+                continue
             if car_type_str.isdigit() and int(car_type_str) in [1, 2]:
                 car_type = int(car_type_str)
                 break
-            print("[Lỗi]: Loại xe không hợp lệ (Vui lòng nhập 1 hoặc 2)!")
+            print("[ERR-01]: Loại xe không hợp lệ (Vui lòng nhập 1 hoặc 2)!")
 
         # Nhập và kiểm tra giờ vào
         while True:
             entry_time_str = input("Nhập giờ vào (0-24): ").strip()
+            if not entry_time_str:
+                print("[ERR-02]: Giờ vào không được để trống!")
+                continue
             if entry_time_str.isdigit():
                 entry_time = int(entry_time_str)
-                break
-            print("[Lỗi]: Vui lòng nhập số nguyên cho giờ vào.")
+                if 0 <= entry_time <= 24:
+                    break
+                else:
+                    print("[ERR-01]: Giờ vào phải nằm trong khoảng từ 0 đến 24!")
+                    continue
+            print("[ERR-01]: Vui lòng nhập số nguyên cho giờ vào.")
 
         # Thêm bản ghi vào danh sách
         parking_lot.append({
@@ -65,7 +74,7 @@ while True:
 
     elif choice == 2:
         if len(parking_lot) == 0:
-            print("\n[Thông báo: Bãi xe hiện đang trống!]")
+            print("\n[Thông báo]: Bãi xe hiện đang trống!")
         else:
             print("\n{:<5} | {:<15} | {:<10} | {:<10}".format("ID", "Biển số xe", "Loại xe", "Giờ vào"))
             print("-" * 50)
@@ -75,56 +84,64 @@ while True:
 
     elif choice == 3:
         search_plate = input("Nhập biển số xe cần tìm: ").strip()
+        if not search_plate:
+            print("[ERR-02]: Biển số xe tìm kiếm không được để trống!")
+            continue
+            
         found = False
         for car in parking_lot:
             if car['plate'] == search_plate:
-                print(f"Thông tin chi tiết: {car}")
+                type_str = "Xe máy" if car['type'] == 1 else "Ô tô"
+                print(f"\n[Tìm thấy] Thông tin chi tiết xe:")
+                print(f" - ID: {car['id']}\n - Biển số: {car['plate']}\n - Loại xe: {type_str}\n - Giờ vào: {car['entry_time']}")
                 found = True
                 break
         if not found:
-            print(f"[Lỗi]: Không tìm thấy biển số {search_plate} trong hệ thống!")
+            print(f"[ERR-04]: Không tìm thấy biển số {search_plate} trong hệ thống!")
 
     elif choice == 4:
         checkout_plate = input("Nhập biển số xe cần ra: ").strip()
+        if not checkout_plate:
+            print("[ERR-02]: Biển số xe không được để trống!")
+            continue
+            
         car_to_checkout = None
-        
         for car in parking_lot:
             if car['plate'] == checkout_plate:
                 car_to_checkout = car
                 break
                 
         if car_to_checkout == None:
-            print(f"[Lỗi]: Không tìm thấy biển số {checkout_plate} trong hệ thống!")
+            print(f"[ERR-04]: Không tìm thấy biển số {checkout_plate} trong hệ thống!")
             continue
             
         # Nhập và kiểm tra giờ ra
         while True:
             exit_time_str = input("Nhập giờ ra: ").strip()
+            if not exit_time_str:
+                print("[ERR-02]: Giờ ra không được để trống!")
+                continue
             if exit_time_str.isdigit():
                 exit_time = int(exit_time_str)
                 if exit_time < car_to_checkout['entry_time']:
-                    print("[Lỗi]: Giờ ra phải sau hoặc bằng giờ vào!")
+                    print("[ERR-05]: Giờ ra phải sau hoặc bằng giờ vào!")
                     continue
                 break
-            print("[Lỗi]: Vui lòng nhập số nguyên cho giờ ra.")
+            print("[ERR-01]: Vui lòng nhập số nguyên cho giờ ra.")
                 
         # Tính phí
-        if car_to_checkout['type'] == 1:
-            rate = 5000
-        else:
-            rate = 10000
-            
+        rate = 5000 if car_to_checkout['type'] == 1 else 10000
         fee = (exit_time - car_to_checkout['entry_time']) * rate
         
-        print(f"Tổng phí phải trả: {fee} VNĐ")
+        print(f"\nTổng phí phải trả: {fee} VNĐ")
         
         # Xóa xe khỏi bãi
         parking_lot.remove(car_to_checkout)
-        print(f"[Thành công]: Đã xóa xe ID {car_to_checkout['id']} thành công!")
+        print(f"[Thành công]: Đã xử lý check-out và xóa xe ID {car_to_checkout['id']} khỏi hệ thống!")
 
     elif choice == 5:
-        print("Đã thoát chương trình.")
+        print("Đã thoát chương trình. Tạm biệt!")
         break
 
     else:
-        print("[Lỗi]: Lựa chọn không hợp lệ. Vui lòng nhập từ 1-5!")
+        print("[ERR-01]: Lựa chọn không hợp lệ. Vui lòng nhập từ 1-5!")
